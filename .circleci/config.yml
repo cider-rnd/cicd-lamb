@@ -19,7 +19,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check Scripts
+          name: Check Script
           command: |
             echo "{:user {:plugins [[lein-kibit \"0.1.8\"]]}}" > ~/.lein/profiles.clj
             lein kibit .
