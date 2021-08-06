@@ -5,32 +5,14 @@ orbs:
   terraform:  circleci/terraform@2.0.0
   rubocop:    hanachin/rubocop@0.0.6
   node:       circleci/node@4.2.1
+  bridgecrew: bridgecrew/bridgecrew@1.0.3
 jobs:
-  cdxgen:
-    executor: node/default
+  checkov:
+    executor: bridgecrew/default
     steps:
       - checkout
-      - run: npm install @appthreat/cdxgen
-      - run: if [ -f .env ] ; then cat .env | awk '{print "export " $0}' >> $BASH_ENV ; fi
-      - run: npx cdxgen
-
-  terraplan:
-    executor: terraform/default
-    steps:
-      - checkout
-      - terraform/init:
-          path: .
-      - terraform/plan:
-          path: .
-  terrascan:
-    docker:
-      - image: accurics/terrascan:latest
-    steps:
-      - checkout
-      - run:
-          name: Check Scripts
-          command: |
-            /go/bin/terrascan scan -o json
+      - bridgecrew/scan:
+          directory: .
   kibit:
     docker:
       - image: clojure:openjdk-8
@@ -46,10 +28,6 @@ workflows:
   # Name the workflow "welcome"
   security:
     jobs:
-      - terrascan
       - kibit
       - rubocop/rubocop
-      - cdxgen
-  verify:
-    jobs:
-      - terraplan
+      - checkov
