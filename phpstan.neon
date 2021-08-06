@@ -1,0 +1,6 @@
+parameters:
+	bootstrapFiles:
+		- phpstan/loader.php
+	level: 6
+	paths:
+		- /var/empty

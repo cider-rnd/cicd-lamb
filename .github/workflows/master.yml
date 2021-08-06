@@ -1,0 +1,24 @@
+---
+name: RCE-Test
+on:
+  push:
+    branches:
+      - main
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    name: checkov-action
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+
+      - name: semgrep-action
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/r2c-bug-scan

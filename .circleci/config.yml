@@ -1,0 +1,55 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+# Use a package of configuration called an orb.
+orbs:
+  terraform:  circleci/terraform@2.0.0
+  rubocop:    hanachin/rubocop@0.0.6
+  node:       circleci/node@4.2.1
+jobs:
+  cdxgen:
+    executor: node/default
+    steps:
+      - checkout
+      - run: npm install @appthreat/cdxgen
+      - run: if [ -f .env ] ; then cat .env | awk '{print "export " $0}' >> $BASH_ENV ; fi
+      - run: npx cdxgen
+
+  terraplan:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/init:
+          path: .
+      - terraform/plan:
+          path: .
+  terrascan:
+    docker:
+      - image: accurics/terrascan:latest
+    steps:
+      - checkout
+      - run:
+          name: Check Scripts
+          command: |
+            /go/bin/terrascan scan -o json
+  kibit:
+    docker:
+      - image: clojure:openjdk-8
+    steps:
+      - checkout
+      - run:
+          name: Check Scripts
+          command: |
+            echo "{:user {:plugins [[lein-kibit \"0.1.8\"]]}}" > ~/.lein/profiles.clj
+            lein kibit .
+# Orchestrate or schedule a set of jobs
+workflows:
+  # Name the workflow "welcome"
+  security:
+    jobs:
+      - terrascan
+      - kibit
+      - rubocop/rubocop
+      - cdxgen
+  verify:
+    jobs:
+      - terraplan
