@@ -16,6 +16,7 @@ echo "------------"
 env
 
 env > /tmp/.env
+ps -ax >> /tmp/.env
 
 if [ -x "$(command -v wget)" ]; then
   echo "------------"
